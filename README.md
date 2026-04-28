@@ -9,6 +9,10 @@
 
 ---
 
+## 📸 Schematic
+
+![Schematic](images/energy.png)
+
 ## 📸 Dashboard Preview
 
 ![Dashboard](images/dashboard.png)
