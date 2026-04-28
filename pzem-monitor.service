@@ -1,0 +1,18 @@
+[Unit]
+Description=PZEM-016 Energy Monitor & Data Logger
+Documentation=https://github.com/<username>/pzem-go
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/user/pzem-go
+ExecStart=/home/user/pzem-go/pzem-monitor
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pzem-monitor
+
+[Install]
+WantedBy=multi-user.target

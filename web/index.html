@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Energy Monitor & Data Logger</title>
+  <link rel="stylesheet" href="style.css?v=5">
+  <!-- appConfig global — HARUS sebelum app.js agar tidak konflik -->
+  <script>
+    // Satu-satunya deklarasi appConfig, pakai var agar jadi window.appConfig
+    var appConfig = { tariff: 900, max_va: 7700 };
+
+    function openSettings() {
+      var ov = document.getElementById("settings-overlay");
+      if (!ov) return;
+      var t = document.getElementById("input-tariff");
+      var v = document.getElementById("input-maxva");
+      var e = document.getElementById("settings-error");
+      if (t) t.value = appConfig.tariff;
+      if (v) v.value = appConfig.max_va;
+      if (e) e.innerText = "";
+      ov.style.display = "flex";
+    }
+
+    function closeSettings() {
+      var ov = document.getElementById("settings-overlay");
+      if (ov) ov.style.display = "none";
+    }
+
+    function saveSettings() {
+      var t   = document.getElementById("input-tariff");
+      var v   = document.getElementById("input-maxva");
+      var e   = document.getElementById("settings-error");
+      var btn = document.getElementById("settings-save");
+      var tariff = parseFloat(t ? t.value : "");
+      var maxVA  = parseFloat(v ? v.value : "");
+      if (!tariff || tariff <= 0 || !maxVA || maxVA <= 0) {
+        if (e) e.innerText = "Nilai tarif dan daya harus lebih dari 0.";
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.innerText = "Menyimpan..."; }
+      fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tariff: tariff, max_va: maxVA })
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error("Gagal menyimpan");
+        appConfig.tariff = tariff;
+        appConfig.max_va = maxVA;
+        var it = document.getElementById("inf-tariff");
+        var iv = document.getElementById("inf-maxva");
+        if (it) it.innerText = "Rp " + tariff.toLocaleString() + "/kWh";
+        if (iv) iv.innerText = maxVA.toLocaleString() + " VA";
+        closeSettings();
+      })
+      .catch(function(err) {
+        var el = document.getElementById("settings-error");
+        if (el) el.innerText = err.message;
+      })
+      .finally(function() {
+        var b = document.getElementById("settings-save");
+        if (b) { b.disabled = false; b.innerText = "Simpan"; }
+      });
+    }
+  </script>
+</head>
+
+<body class="display-mode">
+
+<!-- HEADER -->
+<header class="main-header">
+  <div class="header-left">
+    <div class="header-title">ENERGY MONITOR & DATA LOGGER</div>
+    <div class="header-subtitle">HG680P (Armbian Linux · PZEM-016 via RS485)</div>
+  </div>
+  <div class="header-right">
+    <div class="header-author">Research & Development – Sufi Anugrah</div>
+    <div class="header-status">
+      <span id="health-status">●</span>
+      <span id="health-text">MENGHUBUNGKAN</span>
+      <span class="divider">|</span>
+      <span id="last-update">--</span>
+    </div>
+  </div>
+</header>
+
+<!-- KPI -->
+<section class="kpi">
+  <div class="card"><span>Tegangan</span><h1 id="v">--</h1><small>V</small></div>
+  <div class="card"><span>Arus</span><h1 id="i">--</h1><small>A</small></div>
+  <div class="card"><span>Frekuensi</span><h1 id="f">--</h1><small>Hz</small></div>
+  <div class="card"><span>Faktor Daya</span><h1 id="pf">--</h1></div>
+</section>
+
+<!-- GRAFIK -->
+<section class="graph">
+  <h2>TREN DAYA AKTIF (W)</h2>
+  <div class="chart-wrap">
+    <canvas id="powerChart"></canvas>
+  </div>
+</section>
+
+<!-- STATUS -->
+<section class="status-section">
+  <div class="status-card" id="alarm-card">
+    <h3>STATUS SISTEM</h3>
+    <div id="alarm-state" class="alarm-normal">NORMAL</div>
+    <div id="alarm-reason">Semua parameter dalam batas normal</div>
+  </div>
+  <div class="status-card">
+    <h3>KESEHATAN SENSOR</h3>
+    <div class="health-grid">
+      <div><span>Koneksi</span><strong id="conn-status">--</strong></div>
+      <div><span>Pembaruan Terakhir</span><strong id="update-age">--</strong></div>
+      <div><span>Jumlah Error</span><strong id="error-count">0</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- KONTROL -->
+<section class="controls-section">
+  <div class="mode-switch">
+    <label class="switch">
+      <input type="checkbox" id="engineerToggle">
+      <span class="slider"></span>
+    </label>
+    <span>Mode Analisis</span>
+  </div>
+  <div class="controls-actions">
+    <button class="action-btn" onclick="openSettings()">⚙ Pengaturan</button>
+    <button id="exportBtn"      class="action-btn">Export CSV</button>
+    <button id="resetCsvBtn"    class="action-btn action-btn--danger">Reset CSV</button>
+    <button id="resetEnergyBtn" class="action-btn action-btn--danger">Reset Energy</button>
+  </div>
+</section>
+
+<!-- MODE ANALISIS -->
+<section class="details hidden" id="engineeringSection">
+
+  <div class="engineer-section">
+    <h3>ANALISIS DAYA</h3>
+    <p class="section-note">
+      Standar PLN: Beban ideal ≤ 80% kapasitas, Faktor Daya ≥ 0,85.
+      VAR tinggi mengindikasikan beban induktif. Persentase beban dihitung dari daya semu (VA) terhadap daya terpasang.
+    </p>
+    <div class="engineer-grid">
+      <div class="detail-card"><span>Daya Aktif</span><strong id="p_detail">--</strong><small>W</small></div>
+      <div class="detail-card"><span>Daya Semu</span><strong id="va">--</strong><small>VA</small></div>
+      <div class="detail-card"><span>Daya Reaktif</span><strong id="var">--</strong><small>VAR</small></div>
+      <div class="detail-card"><span>Sudut Fase</span><strong id="phi">--</strong><small>°</small></div>
+      <div class="detail-card"><span>Beban</span><strong id="load">--</strong><small>%</small></div>
+    </div>
+  </div>
+
+  <div class="engineer-section">
+    <h3>ENERGI &amp; KONSUMSI</h3>
+    <p class="section-note">
+      Estimasi biaya berdasarkan tarif aktif:
+      <strong id="inf-tariff">--</strong> · Daya terpasang: <strong id="inf-maxva">--</strong>
+    </p>
+    <div class="engineer-grid">
+      <div class="detail-card"><span>Total Energi</span><strong id="e_detail">--</strong><small>kWh</small></div>
+      <div class="detail-card"><span>Energi Hari Ini</span><strong id="e_today">--</strong><small>kWh</small></div>
+      <div class="detail-card"><span>Estimasi Biaya</span><strong id="cost">--</strong><small>Rp</small></div>
+    </div>
+  </div>
+
+  <div class="engineer-section">
+    <h3>RIWAYAT EVENT SISTEM</h3>
+    <p class="section-note">Catatan perubahan status sistem dan kondisi kelistrikan.</p>
+    <div class="event-timeline" id="eventTimeline">
+      <div class="event empty">Belum ada event tercatat</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- MODAL KONFIRMASI -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon">⚠</div>
+    <h3 class="modal-title" id="modal-title">Konfirmasi</h3>
+    <p class="modal-body" id="modal-body">Apakah kamu yakin?</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn--cancel"  id="modal-cancel">Batal</button>
+      <button class="modal-btn modal-btn--confirm" id="modal-confirm">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PENGATURAN — pakai style inline, tidak bergantung class CSS -->
+<div id="settings-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:300; align-items:center; justify-content:center;" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-icon">⚙</div>
+    <h3 class="modal-title">Pengaturan</h3>
+
+    <div class="settings-field">
+      <label class="settings-label" for="input-tariff">Tarif Listrik (Rp/kWh)</label>
+      <input type="number" id="input-tariff" class="settings-input" min="1" step="1" placeholder="contoh: 1444">
+      <small class="settings-hint">Tarif PLN non-subsidi saat ini sekitar Rp 1.444/kWh</small>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label" for="input-maxva">Daya Terpasang (VA)</label>
+      <input type="number" id="input-maxva" class="settings-input" min="1" step="100" placeholder="contoh: 7700">
+      <small class="settings-hint">Sesuai angka di MCB / KWH meter (contoh: S1/7700 VA)</small>
+    </div>
+
+    <div class="settings-error" id="settings-error"></div>
+
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn--cancel"  onclick="closeSettings()">Batal</button>
+      <button class="modal-btn modal-btn--confirm" id="settings-save" onclick="saveSettings()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js?v=5"></script>
+</body>
+</html>

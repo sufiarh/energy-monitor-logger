@@ -1,0 +1,686 @@
+* {
+box-sizing: border-box;
+font-family: system-ui, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  background: #111;
+  color: #e5e5e5;
+}
+
+/* ===== DISPLAY vs ENGINEER MODE ===== */
+body.display-mode,
+body.engineer-mode {
+  /* biarkan browser default scroll — jangan set overflow apapun */
+}
+
+/* ===== HEADER GRID (INDUSTRIAL / ACADEMIC) ===== */
+.main-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #222;
+  column-gap: 20px;
+}
+
+/* LEFT */
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+}
+
+.header-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* RIGHT */
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.header-author {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.header-status {
+  font-size: 12px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-status .divider {
+  margin: 0 6px;
+}
+
+/* ===== KPI ===== */
+.kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+
+.card {
+  background: #1f1f1f;
+  padding: 16px;
+  border-radius: 6px;
+  text-align: right;
+}
+
+.card span {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.card h1 {
+  font-size: 34px;
+  margin: 6px 0;
+}
+
+/* ===== GRAPH ===== */
+.graph {
+  padding: 20px;
+}
+
+/* chart-wrap: container eksplisit agar canvas tidak meluber */
+.chart-wrap {
+  position: relative;
+  height: 220px;
+  width: 100%;
+}
+
+canvas {
+  touch-action: pan-y;
+}
+
+.graph h2 {
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+/* ===== MODE SWITCH ===== */
+.mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 22px;
+}
+
+.switch input { display: none; }
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #333;
+  border-radius: 22px;
+  transition: 0.3s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #e5e5e5;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: 0.3s;
+}
+
+.switch input:checked + .slider {
+  background: #3b82f6;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* ===== STATUS & ALARM ===== */
+.status-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 0 20px 20px;
+}
+
+.status-card {
+  background: #1f1f1f;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.status-card h3 {
+  font-weight: 400;
+  font-size: 14px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+#alarm-state {
+font-size: 26px;
+font-weight: 600;
+}
+
+.alarm-normal { color: #22c55e; }
+.alarm-warning { color: #facc15; }
+.alarm-critical { color: #ef4444; }
+
+#alarm-reason {
+margin-top: 6px;
+font-size: 13px;
+color: #9ca3af;
+}
+
+/* ===== HEALTH ===== */
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.health-grid span {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.health-grid strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+}
+
+/* ===== ENGINEERING ===== */
+.details {
+  padding: 20px;
+  border-top: none;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.detail-card {
+  background: #1f1f1f;
+  padding: 16px;
+  border-radius: 6px;
+  text-align: right;
+}
+
+.detail-card span {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.detail-card strong {
+  font-size: 28px;
+  display: block;
+  margin-top: 6px;
+}
+
+/* ===== UTIL ===== */
+.hidden {
+  display: none;
+}
+
+/* ===== CONTROLS SECTION — inline, bukan floating ===== */
+.controls-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.controls-section .mode-switch {
+  font-size: 13px;
+}
+
+/* ===== ENGINEER MODE SECTIONS ===== */
+.engineer-section {
+  margin-bottom: 28px;
+}
+
+.engineer-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+
+.section-note {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 14px;
+  max-width: 900px;
+  line-height: 1.4;
+}
+
+.engineer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* ===== EVENT TIMELINE ===== */
+.event-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-left: 3px solid #444;
+  background: #1a1a1a;
+}
+
+.event.normal {
+  border-color: #22c55e;
+}
+
+.event.warning {
+  border-color: #facc15;
+}
+
+.event.critical {
+  border-color: #ef4444;
+}
+
+.event time {
+  color: #9ca3af;
+  margin-right: 6px;
+}
+
+.event.empty {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ===== ENGINEER MODE TONE ===== */
+body.engineer-mode {
+  --accent: #22c55e;
+  --accent-soft: #22d3ee;
+}
+
+body.engineer-mode h3 {
+  color: var(--accent);
+}
+
+body.engineer-mode .detail-card strong {
+  color: var(--accent);
+}
+
+body.engineer-mode .section-note {
+  color: #86efac;
+}
+
+body.engineer-mode canvas {
+  filter: hue-rotate(90deg);
+}
+
+/* ===== CONTROLS ACTIONS ===== */
+.controls-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  touch-action: manipulation;       /* hilangkan tap delay 300ms di mobile */
+  -webkit-tap-highlight-color: transparent; /* hapus highlight biru iOS saat tap */
+  user-select: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.action-btn:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.action-btn--danger:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== CUSTOM MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.15s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: #1a1a1a;
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+  padding: 32px 28px 24px;
+  width: 360px;
+  text-align: center;
+  animation: slideUp 0.18s ease;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-icon {
+  font-size: 36px;
+  margin-bottom: 14px;
+  line-height: 1;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e5e5e5;
+  margin: 0 0 10px;
+  letter-spacing: 0.4px;
+}
+
+.modal-body {
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.55;
+  margin: 0 0 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: opacity 0.15s;
+  border: none;
+}
+
+.modal-btn:hover {
+  opacity: 0.85;
+}
+
+.modal-btn--cancel {
+  background: #2d2d2d;
+  color: #9ca3af;
+  border: 1px solid #374151;
+}
+
+.modal-btn--confirm {
+  background: #ef4444;
+  color: #fff;
+}
+
+.modal-btn--confirm.green {
+  background: #22c55e;
+}
+
+/* ============================================================
+ *  RESPONSIVE — MOBILE
+ *  ============================================================ */
+
+@media (max-width: 640px) {
+
+  /* ── Header ── */
+  .main-header {
+    grid-template-columns: 1fr;
+    padding: 14px 16px 12px;
+    gap: 8px;
+  }
+
+  .header-right {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+
+  .header-title {
+    font-size: 17px;
+    letter-spacing: 0.6px;
+  }
+
+  .header-subtitle {
+    font-size: 11px;
+  }
+
+  .header-author {
+    font-size: 11px;
+  }
+
+  .header-status {
+    font-size: 11px;
+  }
+
+  /* ── KPI — 2x2 di mobile ── */
+  .kpi {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .card h1 {
+    font-size: 26px;
+  }
+
+  /* ── Graph ── */
+  .graph {
+    padding: 12px 16px;
+  }
+
+  .graph h2 {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .chart-wrap {
+    height: 150px;
+  }
+
+  /* ── Status section — 1 kolom ── */
+  .status-section {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 16px 16px;
+  }
+
+  #alarm-state {
+  font-size: 22px;
+  }
+
+  .health-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  /* ── Footer ── */
+  .controls-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .controls-actions {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .action-btn {
+    flex: 1;
+    text-align: center;
+    padding: 12px 6px;   /* lebih tinggi = area tap lebih besar di HP */
+    font-size: 11px;
+    min-height: 44px;    /* standar minimum tap target Apple/Google */
+  }
+
+  /* ── Engineer sections ── */
+  .details {
+    padding: 12px 16px;
+  }
+
+  .engineer-section {
+    margin-bottom: 20px;
+  }
+
+  .engineer-section h3 {
+    font-size: 14px;
+  }
+
+  .engineer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .detail-card {
+    padding: 12px;
+  }
+
+  .detail-card strong {
+    font-size: 22px;
+  }
+
+  /* ── Modal ── */
+  .modal {
+    width: calc(100% - 40px);
+    padding: 24px 20px 20px;
+  }
+}
+
+/* ── Tablet (641–1024px) ── */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .kpi {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .main-header {
+    padding: 16px;
+  }
+
+  .status-section {
+    padding: 0 16px 16px;
+  }
+
+  .engineer-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .controls-section {
+    padding: 10px 16px;
+  }
+}
+
+/* ================= PENGATURAN (SETTINGS MODAL) ================= */
+.settings-field {
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.settings-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.settings-input {
+  width: 100%;
+  background: #0d0d0d;
+  border: 1px solid #2d2d2d;
+  border-radius: 6px;
+  color: #e5e5e5;
+  font-size: 15px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.settings-input:focus {
+  border-color: #3b82f6;
+}
+
+.settings-hint {
+  display: block;
+  font-size: 11px;
+  color: #4b5563;
+  margin-top: 5px;
+}
+
+.settings-error {
+  font-size: 12px;
+  color: #ef4444;
+  min-height: 16px;
+  margin-bottom: 8px;
+  text-align: center;
+}

@@ -1,0 +1,36 @@
+# ===========================
+# PZEM-Go — .gitignore
+# ===========================
+
+# Build output
+pzem-monitor
+pzem-go
+*.exe
+
+# Runtime data files (auto-generated)
+history.csv
+history.jsonl
+events.jsonl
+energy_state.json
+
+# Runtime config — use config.json.example as a template instead
+config.json
+
+# Go
+*.test
+*.out
+vendor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cloudflare Tunnel credentials
+*.pem
+cloudflared-*.log
