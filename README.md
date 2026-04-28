@@ -1,4 +1,4 @@
-# ⚡ Energy Monitor & Data Logger
+# ⚡ Real-Time Electrical Energy Monitoring System with Embedded Linux & Go
 
 > A real-time electrical energy monitoring system built on embedded Linux. It reads power measurements from a PZEM-016 sensor over RS485/Modbus RTU, processes and logs the data with Go, serves a web dashboard on the local network, and exposes it to the internet via Cloudflare Tunnel.
 
