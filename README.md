@@ -13,12 +13,9 @@
 
 ![Dashboard](images/dashboard.png)
 
-*Figure 1 — Dashboard*
-
+## 📸 Running Golang and tunneling Cloudflare in background
 
 ![Config](images/config.png)
-
-*Figure 1 — Running Golang and tunneling Cloudflare in background*
 
 ---
 
